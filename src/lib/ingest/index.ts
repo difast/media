@@ -39,8 +39,9 @@ async function categoryIdBySlug(slug: string, fallback = "business"): Promise<st
 }
 
 export async function runIngest(opts: { limitPerSource?: number; max?: number } = {}): Promise<IngestSummary> {
-  const limitPerSource = opts.limitPerSource ?? 5;
-  const max = opts.max ?? 20;
+  // Hard caps on how many AI calls a single run can make — the main budget lever.
+  const limitPerSource = opts.limitPerSource ?? parseInt(process.env.INGEST_LIMIT_PER_SOURCE ?? "5", 10) || 5;
+  const max = opts.max ?? parseInt(process.env.INGEST_MAX ?? "20", 10) || 20;
   const autoPublish = process.env.INGEST_AUTO_PUBLISH === "true";
 
   // 1. Collect
