@@ -60,7 +60,6 @@ export const INFO_PAGES = [
   { slug: "editorial-policy", title: { ru: "Редакционная политика", en: "Editorial policy" } },
   { slug: "contacts", title: { ru: "Контакты", en: "Contacts" } },
   { slug: "advertising", title: { ru: "Рекламодателям", en: "Advertising" } },
-  { slug: "support", title: { ru: "Поддержка проекта", en: "Support the project" } },
   { slug: "archive", title: { ru: "Архив", en: "Archive" } },
 ];
 

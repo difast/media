@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
-import { changeArticleStatus, deleteArticle } from "@/lib/actions/studio";
+import { changeArticleStatus, deleteArticle, postToTelegramAction } from "@/lib/actions/studio";
 import type { ArticleStatus } from "@prisma/client";
 
 const STATUS_LABEL: Record<ArticleStatus, string> = {
@@ -42,6 +42,7 @@ export default async function ArticlesListPage({
     take: 100,
     select: {
       id: true, slug: true, title: true, status: true, updatedAt: true,
+      isAiGenerated: true, telegramPostedAt: true,
       author: { select: { name: true } },
       category: { select: { title: true } },
     },
@@ -90,6 +91,8 @@ export default async function ArticlesListPage({
               <tr key={a.id}>
                 <td className="px-4 py-2">
                   <Link href={`/studio/articles/${a.id}/edit`} className="font-medium headline-hover">{a.title}</Link>
+                  {a.isAiGenerated && <span className="ml-2 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold text-purple-700">ИИ</span>}
+                  {a.telegramPostedAt && <span className="ml-1 rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700">TG</span>}
                 </td>
                 <td className="px-4 py-2 text-ink-500">{a.category.title}</td>
                 {isEditor && <td className="px-4 py-2 text-ink-500">{a.author.name}</td>}
@@ -133,6 +136,14 @@ export default async function ArticlesListPage({
                     )}
                     {a.status === "PUBLISHED" && (
                       <Link href={`/article/${a.slug}`} className="rounded border hairline px-2 py-0.5 text-xs hover:border-brand">↗</Link>
+                    )}
+                    {isEditor && a.status === "PUBLISHED" && (
+                      <form action={postToTelegramAction}>
+                        <input type="hidden" name="id" value={a.id} />
+                        <button className="rounded border hairline px-2 py-0.5 text-xs hover:border-brand" title="Опубликовать/переслать в Telegram">
+                          {a.telegramPostedAt ? "TG ↻" : "В Telegram"}
+                        </button>
+                      </form>
                     )}
                     {isEditor && (
                       <form action={deleteArticle}>

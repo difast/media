@@ -132,7 +132,7 @@ export default async function HomePage() {
       <section className="mt-16 rounded-lg border hairline bg-ink-50 p-8 text-center dark:bg-ink-900/40">
         <h2 className="font-serif text-2xl font-bold">{t(locale, "newsletter.title")}</h2>
         <p className="mx-auto mt-2 max-w-xl text-ink-500 dark:text-ink-400">{t(locale, "newsletter.desc")}</p>
-        <Link href="/support" className="mt-4 inline-block rounded-full bg-brand px-6 py-2.5 font-semibold text-white hover:bg-brand-700">
+        <Link href="/#newsletter" className="mt-4 inline-block rounded-full bg-brand px-6 py-2.5 font-semibold text-white hover:bg-brand-700">
           {t(locale, "nav.subscribe")}
         </Link>
       </section>

@@ -188,6 +188,14 @@ model Article {
   isEditorPick Boolean @default(false) // редакционные подборки
   viewCount   Int     @default(0)
 
+  // AI ingestion / source attribution
+  isAiGenerated Boolean @default(false) // сгенерировано ИИ-ботом
+  sourceUrl     String? // первоисточник
+  sourceName    String? // название источника
+
+  // Telegram cross-posting (set once when the short version is sent)
+  telegramPostedAt DateTime?
+
   // Localization
   locale String @default("ru")
 
@@ -367,4 +375,21 @@ model Subscriber {
   locale    String   @default("ru")
   confirmed Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+// ─────────────────────────── AI ingestion log (deduplication) ───────────────────────────
+
+// One row per source item the ingestion bot has seen — prevents duplicate
+// articles from the same original news URL.
+model IngestedItem {
+  id        String   @id @default(cuid())
+  sourceUrl String   @unique
+  source    String // human-readable source name (GNews / RBC / TechCrunch …)
+  title     String
+  articleId String? // resulting article, if created
+  status    String   @default("created") // created | skipped | failed
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

@@ -18,7 +18,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
   return (
     <footer className="mt-16 border-t hairline bg-ink-50 dark:bg-ink-900/40">
       {/* Newsletter band */}
-      <div className="border-b hairline">
+      <div id="newsletter" className="scroll-mt-28 border-b hairline">
         <div className="container-page grid gap-6 py-10 md:grid-cols-2 md:items-center">
           <div>
             <h3 className="font-serif text-xl font-bold">{t(locale, "newsletter.title")}</h3>

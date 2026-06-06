@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { auth, signOut } from "@/lib/auth";
 import { canWrite, canPublish } from "@/lib/auth";
 import { slugify, estimateReadingMinutes } from "@/lib/utils";
+import { postArticleToTelegram } from "@/lib/telegram";
 
 async function requireWriter() {
   const session = await auth();
@@ -171,8 +172,9 @@ export async function changeArticleStatus(formData: FormData) {
   const perm = STATUS_PERMS[status];
   const user = perm === "editor" ? await requireEditor() : await requireWriter();
 
+  const existing = await prisma.article.findUnique({ where: { id } });
   const data: Record<string, unknown> = { status };
-  if (status === "PUBLISHED") {
+  if (status === "PUBLISHED" && !existing?.publishedAt) {
     data.publishedAt = new Date();
   }
   await prisma.article.update({ where: { id }, data });
@@ -180,12 +182,18 @@ export async function changeArticleStatus(formData: FormData) {
     data: {
       articleId: id,
       editorId: user.id,
-      title: (await prisma.article.findUnique({ where: { id } }))!.title,
+      title: existing!.title,
       body: "",
       status,
       note: `Статус изменён на ${status}`,
     },
   });
+
+  // Auto cross-post to Telegram on first publish (idempotent inside helper)
+  if (status === "PUBLISHED") {
+    await postArticleToTelegram(id).catch(() => false);
+  }
+
   revalidatePath("/studio/articles");
   revalidatePath("/");
 }
@@ -260,6 +268,21 @@ export async function saveMasthead(formData: FormData) {
   }
   revalidatePath("/studio/settings");
   revalidatePath("/");
+}
+
+export async function runIngestNow() {
+  await requireEditor();
+  const { runIngest } = await import("@/lib/ingest");
+  await runIngest();
+  revalidatePath("/studio/articles");
+  revalidatePath("/studio");
+}
+
+export async function postToTelegramAction(formData: FormData) {
+  await requireEditor();
+  const id = String(formData.get("id"));
+  await postArticleToTelegram(id, true);
+  revalidatePath("/studio/articles");
 }
 
 export async function logoutAction() {
