@@ -1,4 +1,5 @@
 import { saveArticle } from "@/lib/actions/studio";
+import { CoverField } from "./cover-field";
 
 type Category = { id: string; title: string };
 type ArticleData = {
@@ -98,10 +99,7 @@ export function ArticleForm({
       {/* Media */}
       <fieldset className="space-y-4">
         <legend className="font-serif text-lg font-bold">Медиа</legend>
-        <div>
-          <label className={labelCls}>Обложка (URL)</label>
-          <input name="coverImage" defaultValue={article?.coverImage ?? ""} className={inputCls} />
-        </div>
+        <CoverField defaultValue={article?.coverImage ?? ""} />
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Видео (embed URL)</label>

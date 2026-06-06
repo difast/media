@@ -350,6 +350,8 @@ model MediaAsset {
   id        String   @id @default(cuid())
   url       String
   type      String // image | video | audio | document
+  mime      String?
+  data      Bytes? // binary stored in DB (no external object storage required)
   alt       String?
   caption   String?
   width     Int?

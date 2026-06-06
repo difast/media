@@ -287,6 +287,14 @@ export async function runIngestNow() {
   revalidatePath("/studio");
 }
 
+export async function toggleIngest(formData: FormData) {
+  await requireEditor();
+  const { saveIngestConfig } = await import("@/lib/ingest/config");
+  await saveIngestConfig({ enabled: String(formData.get("enabled")) === "true" });
+  revalidatePath("/studio/automation");
+  revalidatePath("/studio");
+}
+
 export async function saveAutomation(formData: FormData) {
   await requireEditor();
   const { saveIngestConfig } = await import("@/lib/ingest/config");

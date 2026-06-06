@@ -6,61 +6,67 @@ import { useEffect, useRef } from "react";
 type Item = { slug: string; title: string };
 
 export function BreakingTickerClient({ items, label }: { items: Item[]; label: string }) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(0); // current translateX in px (<= 0)
+  const halfRef = useRef(0); // width of one copy of the list
   const pausedRef = useRef(false);
-  const dragRef = useRef<{ active: boolean; startX: number; startScroll: number; moved: boolean }>({
-    active: false, startX: 0, startScroll: 0, moved: false,
-  });
+  const drag = useRef({ active: false, startX: 0, startOffset: 0, moved: false });
 
   // Duplicate items so the loop is seamless.
   const loop = [...items, ...items];
 
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    let raf = 0;
-    const SPEED = 0.4; // px per frame (~24px/s) — slow
+  const wrap = () => {
+    const half = halfRef.current;
+    if (half <= 0) return;
+    if (offsetRef.current <= -half) offsetRef.current += half;
+    if (offsetRef.current > 0) offsetRef.current -= half;
+  };
 
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const measure = () => { halfRef.current = track.scrollWidth / 2; };
+    measure();
+    window.addEventListener("resize", measure);
+
+    let raf = 0;
+    const SPEED = 0.4; // px/frame (~24px/s) — slow
     const step = () => {
-      if (!pausedRef.current && !dragRef.current.active) {
-        el.scrollLeft += SPEED;
-        const half = el.scrollWidth / 2;
-        if (el.scrollLeft >= half) el.scrollLeft -= half;
+      if (!pausedRef.current && !drag.current.active) {
+        offsetRef.current -= SPEED;
+        wrap();
+        track.style.transform = `translate3d(${offsetRef.current}px,0,0)`;
       }
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+    };
   }, [items.length]);
 
-  // Pointer drag handlers
   const onPointerDown = (e: React.PointerEvent) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    dragRef.current = { active: true, startX: e.clientX, startScroll: el.scrollLeft, moved: false };
-    el.setPointerCapture(e.pointerId);
+    drag.current = { active: true, startX: e.clientX, startOffset: offsetRef.current, moved: false };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
-    const el = scrollerRef.current;
-    if (!el || !dragRef.current.active) return;
-    const dx = e.clientX - dragRef.current.startX;
-    if (Math.abs(dx) > 3) dragRef.current.moved = true;
-    el.scrollLeft = dragRef.current.startScroll - dx;
-    const half = el.scrollWidth / 2;
-    if (el.scrollLeft < 0) el.scrollLeft += half;
-    if (el.scrollLeft >= half) el.scrollLeft -= half;
+    if (!drag.current.active) return;
+    const dx = e.clientX - drag.current.startX;
+    if (Math.abs(dx) > 3) drag.current.moved = true;
+    offsetRef.current = drag.current.startOffset + dx;
+    wrap();
+    if (trackRef.current) trackRef.current.style.transform = `translate3d(${offsetRef.current}px,0,0)`;
   };
   const endDrag = (e: React.PointerEvent) => {
-    const el = scrollerRef.current;
-    dragRef.current.active = false;
-    try { el?.releasePointerCapture(e.pointerId); } catch { /* noop */ }
+    drag.current.active = false;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* noop */ }
   };
-  // Prevent accidental navigation right after a drag.
   const onClickCapture = (e: React.MouseEvent) => {
-    if (dragRef.current.moved) {
+    if (drag.current.moved) {
       e.preventDefault();
       e.stopPropagation();
-      dragRef.current.moved = false;
+      drag.current.moved = false;
     }
   };
 
@@ -72,8 +78,7 @@ export function BreakingTickerClient({ items, label }: { items: Item[]; label: s
           {label}
         </span>
         <div
-          ref={scrollerRef}
-          className="no-scrollbar flex flex-1 cursor-grab gap-8 overflow-x-auto whitespace-nowrap select-none active:cursor-grabbing"
+          className="relative flex-1 cursor-grab overflow-hidden select-none active:cursor-grabbing"
           onMouseEnter={() => (pausedRef.current = true)}
           onMouseLeave={() => (pausedRef.current = false)}
           onPointerDown={onPointerDown}
@@ -82,17 +87,19 @@ export function BreakingTickerClient({ items, label }: { items: Item[]; label: s
           onPointerCancel={endDrag}
           onClickCapture={onClickCapture}
         >
-          {loop.map((item, i) => (
-            <Link
-              key={`${item.slug}-${i}`}
-              href={`/article/${item.slug}`}
-              draggable={false}
-              className="text-sm text-ink-100 transition-colors hover:text-brand-300"
-            >
-              <span className="mr-2 text-brand-400">•</span>
-              {item.title}
-            </Link>
-          ))}
+          <div ref={trackRef} className="flex w-max gap-8 whitespace-nowrap will-change-transform">
+            {loop.map((item, i) => (
+              <Link
+                key={`${item.slug}-${i}`}
+                href={`/article/${item.slug}`}
+                draggable={false}
+                className="text-sm text-ink-100 transition-colors hover:text-brand-300"
+              >
+                <span className="mr-2 text-brand-400">•</span>
+                {item.title}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>

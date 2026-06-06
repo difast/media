@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getIngestConfig, startOfDayInTz } from "@/lib/ingest/config";
-import { saveAutomation, runIngestNow } from "@/lib/actions/studio";
+import { saveAutomation, runIngestNow, toggleIngest } from "@/lib/actions/studio";
 import { telegramConfigured } from "@/lib/telegram";
 
 const inputCls = "w-full rounded-md border hairline bg-transparent px-3 py-2 text-sm outline-none focus:border-brand";
@@ -33,6 +33,22 @@ export default async function AutomationPage() {
         <Stat label="Окно" value={`${cfg.windowStart}:00–${cfg.windowEnd}:00`} />
         <Stat label="Статус" value={cfg.enabled ? "Включён" : "Выключен"} accent={cfg.enabled} />
       </div>
+
+      {/* Big on/off control */}
+      <form action={toggleIngest} className="mt-5">
+        <input type="hidden" name="enabled" value={cfg.enabled ? "false" : "true"} />
+        <button
+          className={
+            "rounded-full px-6 py-2.5 font-semibold text-white " +
+            (cfg.enabled ? "bg-ink-700 hover:bg-ink-800" : "bg-emerald-600 hover:bg-emerald-700")
+          }
+        >
+          {cfg.enabled ? "⏸ Остановить бота" : "▶ Запустить бота"}
+        </button>
+        <span className="ml-3 text-sm text-ink-500">
+          Сейчас: <strong>{cfg.enabled ? "работает" : "остановлен"}</strong>
+        </span>
+      </form>
 
       {/* Integration checklist */}
       <div className="mt-4 flex flex-wrap gap-2 text-xs">
