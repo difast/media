@@ -2,7 +2,10 @@
 // Production-ready schema for an independent international business media platform.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // Docker runtime is node:22-alpine (musl). Include the musl engine so both
+  // local (native) and the Alpine container have a matching engine binary.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
