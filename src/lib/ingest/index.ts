@@ -47,8 +47,10 @@ export async function runIngest(
   const trigger = opts.trigger ?? "manual";
   const empty: IngestSummary = { collected: 0, created: 0, skipped: 0, failed: 0, published: 0 };
 
-  // Time window (10:00–22:00 by default) — only enforced for the scheduler.
+  // Automatic triggers (scheduler / cron) respect the on/off switch and the
+  // time window. A "manual" trigger (button) deliberately ignores both.
   if (trigger === "scheduler") {
+    if (!cfg.enabled) return { ...empty, note: "disabled" };
     const hour = hourInTz(cfg.timezone);
     if (hour < cfg.windowStart || hour >= cfg.windowEnd) {
       return { ...empty, note: `outside window ${cfg.windowStart}-${cfg.windowEnd}` };

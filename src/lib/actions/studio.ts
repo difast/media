@@ -302,8 +302,10 @@ export async function saveAutomation(formData: FormData) {
     const v = parseInt(String(formData.get(k) ?? ""), 10);
     return isNaN(v) ? d : v;
   };
+  // NOTE: `enabled` is intentionally NOT changed here — the on/off state is
+  // controlled solely by the Start/Stop button (toggleIngest). Saving settings
+  // must never re-enable a stopped bot.
   await saveIngestConfig({
-    enabled: formData.get("enabled") === "on",
     autoPublish: formData.get("autoPublish") === "on",
     postsPerDay: Math.min(100, Math.max(1, num("postsPerDay", 12))),
     windowStart: Math.min(23, Math.max(0, num("windowStart", 10))),

@@ -42,7 +42,7 @@ export default async function ArticlesListPage({
     take: 100,
     select: {
       id: true, slug: true, title: true, status: true, updatedAt: true,
-      isAiGenerated: true, telegramPostedAt: true,
+      isAiGenerated: true, telegramPostedAt: true, sourceName: true, sourceUrl: true,
       author: { select: { name: true } },
       category: { select: { title: true } },
     },
@@ -92,6 +92,11 @@ export default async function ArticlesListPage({
                 <td className="px-4 py-2">
                   <Link href={`/studio/articles/${a.id}/edit`} className="font-medium headline-hover">{a.title}</Link>
                   {a.isAiGenerated && <span className="ml-2 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold text-purple-700">ИИ</span>}
+                  {a.sourceName && (
+                    a.sourceName.startsWith("GNews")
+                      ? <span className="ml-1 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700">GNews</span>
+                      : <span className="ml-1 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold text-teal-700" title={a.sourceName}>RSS · {a.sourceName}</span>
+                  )}
                   {a.telegramPostedAt && <span className="ml-1 rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700">TG</span>}
                 </td>
                 <td className="px-4 py-2 text-ink-500">{a.category.title}</td>

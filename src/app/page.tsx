@@ -19,7 +19,9 @@ import {
 } from "@/components/sections/sidebar-widgets";
 import { EmptyState } from "@/components/ui/empty-state";
 
-export const revalidate = 60; // ISR — refresh homepage every minute
+// Always render fresh so newly published material appears immediately
+// (homepage no longer makes any AI calls, so this is cheap).
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const locale = await getLocale();

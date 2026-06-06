@@ -59,9 +59,10 @@ export default async function AutomationPage() {
 
       {/* Settings form */}
       <form action={saveAutomation} className="mt-6 max-w-2xl space-y-5 rounded-lg border hairline p-5">
-        <label className="flex items-center gap-2 text-sm font-medium">
-          <input type="checkbox" name="enabled" defaultChecked={cfg.enabled} /> Включить автоматический запуск
-        </label>
+        <p className="text-sm font-medium">Настройки автопостинга</p>
+        <p className="-mt-3 text-xs text-ink-400">
+          Включение/выключение — кнопкой выше. Здесь — только параметры.
+        </p>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
@@ -108,8 +109,11 @@ export default async function AutomationPage() {
 
       <form action={runIngestNow} className="mt-4">
         <button className="rounded-full border hairline px-5 py-2 font-semibold hover:border-brand">
-          🤖 Запустить сейчас (вручную)
+          🤖 Сгенерировать сейчас (разово)
         </button>
+        <span className="ml-3 text-xs text-ink-400">
+          Один прогон вручную — работает даже если бот выключен. Соблюдает лимит на день.
+        </span>
       </form>
 
       {/* Recent log */}

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { runIngestNow } from "@/lib/actions/studio";
 
 export default async function StudioDashboard() {
   const session = await auth();
@@ -73,19 +72,11 @@ export default async function StudioDashboard() {
           + Новый материал
         </Link>
         {session?.user?.role === "EDITOR" && (
-          <form action={runIngestNow}>
-            <button className="rounded-full border hairline px-5 py-2 font-semibold hover:border-brand">
-              🤖 Запустить ИИ-бот
-            </button>
-          </form>
+          <Link href="/studio/automation" className="rounded-full border hairline px-5 py-2 font-semibold hover:border-brand">
+            🤖 Настройки ИИ-бота
+          </Link>
         )}
       </div>
-      {session?.user?.role === "EDITOR" && (
-        <p className="mt-2 text-xs text-ink-400">
-          ИИ-бот соберёт свежие новости из источников и создаст <strong>черновики</strong> (раздел «Публикации» → фильтр «Черновик»).
-          Срочность отмечается вручную. При публикации материал автоматически уходит в Telegram-канал со ссылкой на сайт.
-        </p>
-      )}
     </div>
   );
 }

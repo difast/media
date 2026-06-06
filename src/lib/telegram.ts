@@ -45,13 +45,18 @@ export async function postArticleToTelegram(articleId: string, force = false): P
   try {
     let ok = false;
     if (article.coverImage) {
+      // Telegram needs an absolute, publicly reachable URL. Uploaded covers are
+      // stored as relative /api/media/<id> paths — make them absolute.
+      const photo = article.coverImage.startsWith("http")
+        ? article.coverImage
+        : absoluteUrl(article.coverImage);
       // sendPhoto caption limit is 1024 chars
       const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          photo: article.coverImage,
+          photo,
           caption: caption.slice(0, 1024),
           parse_mode: "HTML",
         }),
