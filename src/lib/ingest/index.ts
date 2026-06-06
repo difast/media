@@ -5,14 +5,7 @@ import { fetchRss, type RawItem } from "./rss";
 import { fetchGNews } from "./gnews";
 import { generateArticle } from "./generate";
 import { postArticleToTelegram } from "@/lib/telegram";
-
-export type IngestSummary = {
-  collected: number;
-  created: number;
-  skipped: number;
-  failed: number;
-  published: number;
-};
+import { getIngestConfig, hourInTz, startOfDayInTz } from "./config";
 
 // Ensure a dedicated "AI desk" author exists to attribute generated drafts.
 async function getAiAuthor() {
@@ -38,32 +31,70 @@ async function categoryIdBySlug(slug: string, fallback = "business"): Promise<st
   return cat.id;
 }
 
-export async function runIngest(opts: { limitPerSource?: number; max?: number } = {}): Promise<IngestSummary> {
-  // Hard caps on how many AI calls a single run can make — the main budget lever.
+export type IngestSummary = {
+  collected: number;
+  created: number;
+  skipped: number;
+  failed: number;
+  published: number;
+  note?: string;
+};
+
+export async function runIngest(
+  opts: { limitPerSource?: number; max?: number; trigger?: "manual" | "scheduler" } = {}
+): Promise<IngestSummary> {
+  const cfg = await getIngestConfig();
+  const trigger = opts.trigger ?? "manual";
+  const empty: IngestSummary = { collected: 0, created: 0, skipped: 0, failed: 0, published: 0 };
+
+  // Time window (10:00–22:00 by default) — only enforced for the scheduler.
+  if (trigger === "scheduler") {
+    const hour = hourInTz(cfg.timezone);
+    if (hour < cfg.windowStart || hour >= cfg.windowEnd) {
+      return { ...empty, note: `outside window ${cfg.windowStart}-${cfg.windowEnd}` };
+    }
+  }
+
+  // Daily cap (default 12 AI articles/day, counted in the configured timezone).
+  const dayStart = startOfDayInTz(cfg.timezone);
+  const createdToday = await prisma.article.count({
+    where: { isAiGenerated: true, createdAt: { gte: dayStart } },
+  });
+  const remainingToday = cfg.postsPerDay - createdToday;
+  if (remainingToday <= 0) {
+    return { ...empty, note: `daily limit reached (${cfg.postsPerDay})` };
+  }
+
+  // Spread the daily quota across the time window for the scheduler.
+  const windowHours = Math.max(1, cfg.windowEnd - cfg.windowStart);
+  const slots = Math.max(1, Math.floor((windowHours * 60) / cfg.intervalMinutes));
+  const perRunQuota = trigger === "scheduler" ? Math.max(1, Math.ceil(cfg.postsPerDay / slots)) : remainingToday;
+
   const limitPerSource = opts.limitPerSource ?? (parseInt(process.env.INGEST_LIMIT_PER_SOURCE ?? "5", 10) || 5);
-  const max = opts.max ?? (parseInt(process.env.INGEST_MAX ?? "20", 10) || 20);
-  const autoPublish = process.env.INGEST_AUTO_PUBLISH === "true";
+  const max = Math.min(opts.max ?? remainingToday, perRunQuota, remainingToday);
+  const autoPublish = cfg.autoPublish;
 
   // 1. Collect
   const rssBatches = await Promise.all(RSS_SOURCES.map((s) => fetchRss(s, limitPerSource)));
   const gnews = await fetchGNews(3);
   let items: RawItem[] = [...gnews, ...rssBatches.flat()];
 
-  // newest first, cap total
+  // newest first, cap total to the per-run allowance
   items.sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0));
-  items = items.slice(0, max);
+  items = items.slice(0, Math.max(max * 3, max)); // gather extra to survive dedup, create up to `max`
 
   const summary: IngestSummary = { collected: items.length, created: 0, skipped: 0, failed: 0, published: 0 };
   const author = await getAiAuthor();
 
   for (const item of items) {
+    if (summary.created >= max) break; // respect per-run / daily cap
     // 2. Dedup by source URL
     const seen = await prisma.ingestedItem.findUnique({ where: { sourceUrl: item.link } });
     if (seen) { summary.skipped++; continue; }
 
     try {
       // 3. Generate
-      const gen = await generateArticle(item);
+      const gen = await generateArticle(item, cfg.model);
       const catSlug = pickCategory(`${item.title} ${item.description}`, item.defaultCategory);
       const categoryId = await categoryIdBySlug(catSlug);
       const slug = `${slugify(gen.title) || "material"}-${Date.now().toString(36)}`;

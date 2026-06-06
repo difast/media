@@ -8,6 +8,7 @@ const NAV = [
   { href: "/studio", label: "Дашборд", editorOnly: false },
   { href: "/studio/articles", label: "Публикации", editorOnly: false },
   { href: "/studio/articles/new", label: "Создать материал", editorOnly: false },
+  { href: "/studio/automation", label: "Автоматизация (ИИ-бот)", editorOnly: true },
   { href: "/studio/comments", label: "Комментарии", editorOnly: true },
   { href: "/studio/taxonomy", label: "Рубрики и теги", editorOnly: true },
   { href: "/studio/users", label: "Пользователи и авторы", editorOnly: true },

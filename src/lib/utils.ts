@@ -31,6 +31,21 @@ export function formatDate(date: Date | string, locale: Locale = "ru"): string {
   return format(d, "d MMMM yyyy", { locale: locale === "ru" ? ru : enUS });
 }
 
+/** Format a date in a specific timezone (default Europe/Moscow) — for the live header date. */
+export function formatDateTz(
+  date: Date | string,
+  locale: Locale = "ru",
+  timeZone = "Europe/Moscow"
+): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone,
+  }).format(d);
+}
+
 export function formatDateTime(date: Date | string, locale: Locale = "ru"): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return format(d, "d MMMM yyyy, HH:mm", { locale: locale === "ru" ? ru : enUS });

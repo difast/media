@@ -3,11 +3,12 @@ import { auth } from "@/lib/auth";
 import { PRIMARY_SECTIONS, SECTIONS, INFO_PAGES, SITE, type Locale } from "@/lib/site-config";
 import { pick } from "@/lib/locale";
 import { t } from "@/lib/i18n";
-import { formatDate } from "@/lib/utils";
+import { formatDateTz } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { BreakingTicker } from "@/components/sections/breaking-ticker";
+import { CurrencyTicker } from "@/components/sections/currency-ticker";
 
 export async function SiteHeader({ locale }: { locale: Locale }) {
   const session = await auth();
@@ -22,8 +23,11 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
     <header className="sticky top-0 z-40 border-b hairline bg-paper/95 backdrop-blur dark:bg-paper-dark/95">
       {/* Utility bar */}
       <div className="border-b hairline">
-        <div className="container-page flex h-9 items-center justify-between text-xs text-ink-500 dark:text-ink-400">
-          <span className="hidden sm:block">{formatDate(new Date(), locale)}</span>
+        <div className="container-page flex h-9 items-center justify-between gap-4 text-xs text-ink-500 dark:text-ink-400">
+          <div className="flex items-center gap-4">
+            <span className="hidden whitespace-nowrap sm:block">{formatDateTz(new Date(), locale)}</span>
+            <CurrencyTicker className="hidden md:flex" />
+          </div>
           <div className="flex items-center gap-3">
             <LocaleSwitcher current={locale} />
             <ThemeToggle label={t(locale, "theme.toggle")} />

@@ -15,7 +15,7 @@ async function handle(req: Request) {
   if (token !== secret) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   try {
-    const summary = await runIngest();
+    const summary = await runIngest({ trigger: "scheduler" });
     return NextResponse.json({ ok: true, ...summary });
   } catch (e) {
     return NextResponse.json(

@@ -1,26 +1,38 @@
-// Runs once when the Node server starts. Optionally launches an in-process
-// scheduler for the AI ingestion bot so no external cron is required.
-// Enable with INGEST_ENABLED=true; interval via INGEST_INTERVAL_MINUTES (default 60).
+// Runs once when the Node server starts. Launches an in-process scheduler for
+// the AI ingestion bot. All behaviour (on/off, frequency, time window, daily
+// limit) is read from the DB config on every tick, so changes made in the CMS
+// (/studio/automation) take effect WITHOUT a redeploy.
+
+let lastRunAt = 0;
 
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
-  if (process.env.INGEST_ENABLED !== "true") return;
+  // Hard kill-switch via env (optional). If set to "false" the scheduler never starts.
+  if (process.env.INGEST_SCHEDULER === "false") return;
 
-  const intervalMin = Math.max(15, parseInt(process.env.INGEST_INTERVAL_MINUTES ?? "60", 10) || 60);
-  const intervalMs = intervalMin * 60 * 1000;
+  const TICK_MS = 5 * 60 * 1000; // evaluate every 5 minutes
 
   const tick = async () => {
     try {
+      const { getIngestConfig } = await import("@/lib/ingest/config");
+      const cfg = await getIngestConfig();
+      if (!cfg.enabled) return;
+
+      // Respect the configured frequency between actual runs.
+      const sinceMin = (Date.now() - lastRunAt) / 60000;
+      if (sinceMin < cfg.intervalMinutes) return;
+
       const { runIngest } = await import("@/lib/ingest");
-      const summary = await runIngest();
+      const summary = await runIngest({ trigger: "scheduler" });
+      // Only advance the clock when a run actually did work in-window.
+      if (!summary.note?.startsWith("outside window")) lastRunAt = Date.now();
       console.log(`[ingest] ${new Date().toISOString()}`, summary);
     } catch (e) {
-      console.error("[ingest] failed", e);
+      console.error("[ingest] tick failed", e);
     }
   };
 
-  // First run shortly after boot, then on the configured interval.
-  setTimeout(tick, 30_000);
-  setInterval(tick, intervalMs);
-  console.log(`[ingest] scheduler enabled, every ${intervalMin} min`);
+  setTimeout(tick, 30_000); // first evaluation shortly after boot
+  setInterval(tick, TICK_MS);
+  console.log("[ingest] scheduler active (config-driven, evaluated every 5 min)");
 }

@@ -36,7 +36,7 @@ function fallback(item: RawItem): GeneratedArticle {
   };
 }
 
-export async function generateArticle(item: RawItem): Promise<GeneratedArticle> {
+export async function generateArticle(item: RawItem, model?: string): Promise<GeneratedArticle> {
   const apiKey = process.env.AITUNNEL_API_KEY;
   if (!apiKey) return fallback(item);
 
@@ -46,7 +46,7 @@ export async function generateArticle(item: RawItem): Promise<GeneratedArticle> 
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: process.env.AITUNNEL_MODEL || "gpt-4o-mini",
+        model: model || process.env.AITUNNEL_MODEL || "gpt-4o-mini",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           {

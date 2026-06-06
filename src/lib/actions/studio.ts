@@ -273,9 +273,29 @@ export async function saveMasthead(formData: FormData) {
 export async function runIngestNow() {
   await requireEditor();
   const { runIngest } = await import("@/lib/ingest");
-  await runIngest();
+  await runIngest({ trigger: "manual" });
   revalidatePath("/studio/articles");
   revalidatePath("/studio");
+}
+
+export async function saveAutomation(formData: FormData) {
+  await requireEditor();
+  const { saveIngestConfig } = await import("@/lib/ingest/config");
+  const num = (k: string, d: number) => {
+    const v = parseInt(String(formData.get(k) ?? ""), 10);
+    return isNaN(v) ? d : v;
+  };
+  await saveIngestConfig({
+    enabled: formData.get("enabled") === "on",
+    autoPublish: formData.get("autoPublish") === "on",
+    postsPerDay: Math.min(100, Math.max(1, num("postsPerDay", 12))),
+    windowStart: Math.min(23, Math.max(0, num("windowStart", 10))),
+    windowEnd: Math.min(24, Math.max(1, num("windowEnd", 22))),
+    intervalMinutes: Math.min(720, Math.max(15, num("intervalMinutes", 60))),
+    model: String(formData.get("model") || "gpt-4o-mini"),
+    timezone: String(formData.get("timezone") || "Europe/Moscow"),
+  });
+  revalidatePath("/studio/automation");
 }
 
 export async function postToTelegramAction(formData: FormData) {
