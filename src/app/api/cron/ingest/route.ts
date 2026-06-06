@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { runIngest } from "@/lib/ingest";
 
 // AI ingestion trigger. Call on a schedule (Railway Cron / cron-job.org) or
@@ -16,6 +17,10 @@ async function handle(req: Request) {
 
   try {
     const summary = await runIngest({ trigger: "scheduler" });
+    if (summary.published > 0 || summary.created > 0) {
+      revalidatePath("/");
+      revalidatePath("/section/news");
+    }
     return NextResponse.json({ ok: true, ...summary });
   } catch (e) {
     return NextResponse.json(

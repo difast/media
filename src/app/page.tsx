@@ -19,7 +19,7 @@ import {
 } from "@/components/sections/sidebar-widgets";
 import { EmptyState } from "@/components/ui/empty-state";
 
-export const revalidate = 120; // ISR — refresh homepage every 2 minutes
+export const revalidate = 60; // ISR — refresh homepage every minute
 
 export default async function HomePage() {
   const locale = await getLocale();

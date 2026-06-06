@@ -37,9 +37,14 @@ export default async function SectionPage({ params, searchParams }: Params) {
 
   const title = section ? pick(section.title, locale) : cat?.title ?? slug;
 
+  // "Новости" is the global feed — every published material appears here,
+  // regardless of its own category. Other sections filter by their category.
+  const isNewsFeed = slug === "news";
+  const filterSlug = isNewsFeed ? undefined : slug;
+
   const [articles, total] = await Promise.all([
-    getPublishedArticles({ categorySlug: slug, take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }),
-    countPublished(slug),
+    getPublishedArticles({ categorySlug: filterSlug, take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }),
+    countPublished(filterSlug),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 

@@ -83,6 +83,11 @@ export async function saveArticle(formData: FormData) {
   const scheduledAt = scheduledAtRaw ? new Date(String(scheduledAtRaw)) : null;
   const readingMinutes = estimateReadingMinutes(data.body);
 
+  // Homepage placement flags (срочность — только вручную, отсюда)
+  const isBreaking = formData.get("isBreaking") === "on";
+  const isFeatured = formData.get("isFeatured") === "on";
+  const isEditorPick = formData.get("isEditorPick") === "on";
+
   // Resolve tags (create missing)
   const tagConnect = [];
   for (const ts of tagSlugs) {
@@ -114,6 +119,9 @@ export async function saveArticle(formData: FormData) {
     readingMinutes,
     sources,
     scheduledAt,
+    isBreaking,
+    isFeatured,
+    isEditorPick,
   };
 
   let articleId = id;
@@ -154,6 +162,7 @@ export async function saveArticle(formData: FormData) {
   });
 
   revalidatePath("/studio/articles");
+  revalidatePath("/");
   redirect(`/studio/articles/${articleId}/edit?saved=1`);
 }
 

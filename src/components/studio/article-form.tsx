@@ -18,6 +18,9 @@ type ArticleData = {
   ogImage: string | null;
   locale: string;
   scheduledAt: Date | null;
+  isBreaking?: boolean;
+  isFeatured?: boolean;
+  isEditorPick?: boolean;
   tags: { tag: { slug: string } }[];
   sources: unknown;
 } | null;
@@ -154,6 +157,23 @@ export function ArticleForm({
             className={inputCls}
           />
         </div>
+      </fieldset>
+
+      {/* Placement on the homepage */}
+      <fieldset className="space-y-3">
+        <legend className="font-serif text-lg font-bold">Размещение на главной</legend>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="isBreaking" defaultChecked={article?.isBreaking ?? false} />
+          <span><strong>Срочное</strong> — в бегущую строку (отмечается вручную)</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="isFeatured" defaultChecked={article?.isFeatured ?? false} />
+          <span><strong>На главную (Featured)</strong> — крупный блок «Важные события»</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="isEditorPick" defaultChecked={article?.isEditorPick ?? false} />
+          <span><strong>Редакционная подборка</strong> — блок «Редподборки»</span>
+        </label>
       </fieldset>
 
       <div className="flex gap-3 border-t hairline pt-6">

@@ -10,6 +10,9 @@ export async function getAiRecommendations(take = 4): Promise<{
   poweredByAi: boolean;
 }> {
   const apiKey = process.env.AITUNNEL_API_KEY;
+  // Live LLM ranking on the homepage is OFF by default — it adds latency on
+  // every render and spends the AI budget. Set HOMEPAGE_AI_RANK="true" to enable.
+  const liveRanking = process.env.HOMEPAGE_AI_RANK === "true";
 
   // Candidate pool
   const [picks, popular] = await Promise.all([getEditorPicks(8), getPopular(12)]);
@@ -22,7 +25,7 @@ export async function getAiRecommendations(take = 4): Promise<{
     }
   }
 
-  if (!apiKey || pool.length === 0) {
+  if (!apiKey || !liveRanking || pool.length === 0) {
     return { articles: pool.slice(0, take), poweredByAi: false };
   }
 
