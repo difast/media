@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { PwaRegister } from "@/components/pwa-register";
 import { SITE } from "@/lib/site-config";
 import { getLocale } from "@/lib/locale";
 
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/favicon.svg",
-    apple: "/icons/icon-192.png",
+    apple: "/icons/icon.svg",
   },
 };
 
@@ -68,6 +69,7 @@ export default async function RootLayout({
           <SiteHeader locale={locale} />
           <main className="flex-1">{children}</main>
           <SiteFooter locale={locale} />
+          <PwaRegister />
         </ThemeProvider>
       </body>
     </html>

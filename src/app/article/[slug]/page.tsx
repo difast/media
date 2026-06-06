@@ -80,7 +80,7 @@ export default async function ArticlePage({ params }: Params) {
     publisher: {
       "@type": "Organization",
       name: "Pyatakov Media",
-      logo: { "@type": "ImageObject", url: absoluteUrl("/icons/icon-192.png") },
+      logo: { "@type": "ImageObject", url: absoluteUrl("/icons/icon.svg") },
     },
     mainEntityOfPage: absoluteUrl(`/article/${article.slug}`),
     articleSection: catTitle,
