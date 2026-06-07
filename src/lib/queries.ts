@@ -19,10 +19,14 @@ const cardSelect = {
 
 export type ArticleCard = Prisma.ArticleGetPayload<{ select: typeof cardSelect }>;
 
-const publishedWhere: Prisma.ArticleWhereInput = {
-  status: "PUBLISHED",
-  publishedAt: { lte: new Date() },
-};
+// IMPORTANT: must be a function — evaluating `new Date()` once at module load
+// would freeze "now" at server-boot time and hide everything published later.
+function publishedWhere(): Prisma.ArticleWhereInput {
+  return {
+    status: "PUBLISHED",
+    publishedAt: { lte: new Date() },
+  };
+}
 
 export async function getPublishedArticles(opts: {
   take?: number;
@@ -33,7 +37,7 @@ export async function getPublishedArticles(opts: {
 } = {}): Promise<ArticleCard[]> {
   return prisma.article.findMany({
     where: {
-      ...publishedWhere,
+      ...publishedWhere(),
       ...(opts.categorySlug ? { category: { slug: opts.categorySlug } } : {}),
       ...(opts.kind ? { category: { kind: opts.kind } } : {}),
       ...(opts.locale ? { locale: opts.locale } : {}),
@@ -47,7 +51,7 @@ export async function getPublishedArticles(opts: {
 
 export async function getFeatured(take = 5): Promise<ArticleCard[]> {
   return prisma.article.findMany({
-    where: { ...publishedWhere, isFeatured: true },
+    where: { ...publishedWhere(), isFeatured: true },
     orderBy: { publishedAt: "desc" },
     take,
     select: cardSelect,
@@ -56,7 +60,7 @@ export async function getFeatured(take = 5): Promise<ArticleCard[]> {
 
 export async function getBreaking(take = 8) {
   return prisma.article.findMany({
-    where: { ...publishedWhere, isBreaking: true },
+    where: { ...publishedWhere(), isBreaking: true },
     orderBy: { publishedAt: "desc" },
     take,
     select: { slug: true, title: true },
@@ -65,7 +69,7 @@ export async function getBreaking(take = 8) {
 
 export async function getPopular(take = 6): Promise<ArticleCard[]> {
   return prisma.article.findMany({
-    where: publishedWhere,
+    where: publishedWhere(),
     orderBy: [{ viewCount: "desc" }, { publishedAt: "desc" }],
     take,
     select: cardSelect,
@@ -74,7 +78,7 @@ export async function getPopular(take = 6): Promise<ArticleCard[]> {
 
 export async function getEditorPicks(take = 4): Promise<ArticleCard[]> {
   return prisma.article.findMany({
-    where: { ...publishedWhere, isEditorPick: true },
+    where: { ...publishedWhere(), isEditorPick: true },
     orderBy: { publishedAt: "desc" },
     take,
     select: cardSelect,
@@ -83,7 +87,7 @@ export async function getEditorPicks(take = 4): Promise<ArticleCard[]> {
 
 export async function getLatestInterviews(take = 3): Promise<ArticleCard[]> {
   return prisma.article.findMany({
-    where: { ...publishedWhere, category: { kind: "INTERVIEW" } },
+    where: { ...publishedWhere(), category: { kind: "INTERVIEW" } },
     orderBy: { publishedAt: "desc" },
     take,
     select: cardSelect,
@@ -101,7 +105,7 @@ export async function getTrendingTags(take = 10) {
 
 export async function getArticleBySlug(slug: string) {
   return prisma.article.findFirst({
-    where: { slug, ...publishedWhere },
+    where: { slug, ...publishedWhere() },
     include: {
       category: true,
       author: true,
@@ -118,7 +122,7 @@ export async function incrementViews(id: string) {
 
 export async function getRelated(articleId: string, categoryId: string, take = 4) {
   return prisma.article.findMany({
-    where: { ...publishedWhere, categoryId, NOT: { id: articleId } },
+    where: { ...publishedWhere(), categoryId, NOT: { id: articleId } },
     orderBy: { publishedAt: "desc" },
     take,
     select: cardSelect,
@@ -127,6 +131,6 @@ export async function getRelated(articleId: string, categoryId: string, take = 4
 
 export async function countPublished(categorySlug?: string) {
   return prisma.article.count({
-    where: { ...publishedWhere, ...(categorySlug ? { category: { slug: categorySlug } } : {}) },
+    where: { ...publishedWhere(), ...(categorySlug ? { category: { slug: categorySlug } } : {}) },
   });
 }
