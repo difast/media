@@ -23,7 +23,7 @@ export default async function LegalPage({ params }: Params) {
   return (
     <div className="container-page py-10">
       <article className="mx-auto max-w-3xl">
-        <h1 className="font-serif text-4xl font-bold">{doc.title}</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold">{doc.title}</h1>
         <p className="mt-2 text-sm text-ink-400">Редакция от {formatDate(doc.updated)}</p>
         <div className="prose-editorial mt-8" dangerouslySetInnerHTML={{ __html: doc.html }} />
       </article>

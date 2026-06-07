@@ -15,7 +15,7 @@ export default async function AboutPage() {
   return (
     <div className="container-page py-10">
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-serif text-4xl font-bold">О редакции</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold">О редакции</h1>
         <div className="prose-editorial mt-6">
           <p><strong>{SITE.name}</strong> — независимое международное деловое медиа и платформа для интервью, аналитики и исследований на стыке технологий, искусственного интеллекта, инвестиций, предпринимательства и геополитики.</p>
           <p>Наша миссия — объяснять, как устроена новая экономика, и давать предпринимателям, инвесторам и руководителям точную, проверенную и независимую картину мира.</p>

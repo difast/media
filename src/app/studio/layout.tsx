@@ -32,18 +32,18 @@ export default async function StudioLayout({ children }: { children: React.React
           <Link href="/" className="font-serif text-lg font-bold">{SITE.name}</Link>
           <div className="text-xs text-ink-400">CMS · {session.user.role === "EDITOR" ? "Главный редактор" : "Журналист"}</div>
         </div>
-        <nav className="space-y-1">
+        <nav className="no-scrollbar flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:gap-0 lg:space-y-1 lg:overflow-visible lg:pb-0">
           {items.map((n) => (
             <Link
               key={n.href}
               href={n.href}
-              className="block rounded-md px-3 py-2 text-sm font-medium text-ink-700 hover:bg-ink-100 dark:text-ink-200 dark:hover:bg-ink-800"
+              className="block whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-ink-700 hover:bg-ink-100 dark:text-ink-200 dark:hover:bg-ink-800 lg:whitespace-normal"
             >
               {n.label}
             </Link>
           ))}
         </nav>
-        <form action={logoutAction} className="mt-6">
+        <form action={logoutAction} className="mt-3 lg:mt-6">
           <button className="text-sm text-brand-600 hover:underline">Выйти</button>
         </form>
       </aside>

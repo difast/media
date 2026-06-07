@@ -13,7 +13,7 @@ export default function AdvertisingPage() {
   return (
     <div className="container-page py-10">
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-serif text-4xl font-bold">Рекламодателям</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold">Рекламодателям</h1>
         <p className="mt-3 text-ink-500">
           {SITE.name} — аудитория предпринимателей, инвесторов и руководителей. Мы предлагаем форматы,
           сохраняющие доверие читателя и редакционные стандарты.

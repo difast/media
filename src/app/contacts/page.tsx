@@ -13,7 +13,7 @@ export default function ContactsPage() {
   return (
     <div className="container-page py-10">
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-serif text-4xl font-bold">Контакты</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold">Контакты</h1>
         <p className="mt-3 text-ink-500">Свяжитесь с редакцией {SITE.name}.</p>
         <dl className="mt-8 divide-y hairline rounded-lg border hairline">
           {contacts.map((c) => (

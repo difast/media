@@ -40,7 +40,7 @@ export default async function TagPage({ params }: Params) {
     <div className="container-page py-8">
       <header className="mb-8 border-b-2 border-ink-950 pb-4 dark:border-ink-100">
         <div className="kicker">{locale === "ru" ? "Тег" : "Tag"}</div>
-        <h1 className="mt-1 font-serif text-4xl font-bold">#{tag.title}</h1>
+        <h1 className="mt-1 font-serif text-3xl sm:text-4xl font-bold">#{tag.title}</h1>
       </header>
       {articles.length === 0 ? (
         <EmptyState title={locale === "ru" ? "Нет материалов по этому тегу" : "No articles for this tag"} />

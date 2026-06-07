@@ -28,7 +28,7 @@ export default async function ArchivePage() {
 
   return (
     <div className="container-page py-8">
-      <h1 className="mb-2 font-serif text-4xl font-bold">{locale === "ru" ? "Архив" : "Archive"}</h1>
+      <h1 className="mb-2 font-serif text-3xl sm:text-4xl font-bold">{locale === "ru" ? "Архив" : "Archive"}</h1>
       <p className="mb-8 text-ink-500">{locale === "ru" ? "Полный каталог материалов и разделов." : "Full catalogue of articles and sections."}</p>
 
       {/* Sections index */}

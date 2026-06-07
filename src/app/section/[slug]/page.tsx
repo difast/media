@@ -52,7 +52,7 @@ export default async function SectionPage({ params, searchParams }: Params) {
     <div className="container-page py-8">
       <header className="mb-8 border-b-2 border-ink-950 pb-4 dark:border-ink-100">
         <div className="kicker">{SITE.name}</div>
-        <h1 className="mt-1 font-serif text-4xl font-bold tracking-tight">{title}</h1>
+        <h1 className="mt-1 font-serif text-3xl sm:text-4xl font-bold tracking-tight">{title}</h1>
         {cat?.description && <p className="mt-2 max-w-2xl text-ink-500">{cat.description}</p>}
       </header>
 
